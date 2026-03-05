@@ -7,7 +7,7 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Hotkey (hold to record)
-HOTKEY = Key.f7
+HOTKEY = Key.f8
 
 # Audio settings
 SAMPLE_RATE = 16000

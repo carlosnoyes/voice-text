@@ -15,16 +15,28 @@ class HotkeyListener:
         self._tray = tray
         self._enabled = True
         self._recording = False
+        self.__hotkey = config.HOTKEY
 
     def set_enabled(self, enabled):
         self._enabled = enabled
+
+    def set_hotkey(self, key):
+        self._hotkey = key
+
+    @property
+    def _hotkey(self):
+        return self.__hotkey
+
+    @_hotkey.setter
+    def _hotkey(self, value):
+        self.__hotkey = value
 
     def on_press(self, key):
         if not self._enabled:
             return
         if self._recording:
             return
-        if key != config.HOTKEY:
+        if key != self._hotkey:
             return
 
         self._recording = True
@@ -34,7 +46,7 @@ class HotkeyListener:
         self.recorder.start()
 
     def on_release(self, key):
-        if key != config.HOTKEY or not self._recording:
+        if key != self._hotkey or not self._recording:
             return
 
         self._recording = False

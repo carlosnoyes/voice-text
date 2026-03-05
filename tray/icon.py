@@ -1,6 +1,8 @@
 import threading
+import tkinter as tk
 import pystray
 from PIL import Image, ImageDraw
+from pynput.keyboard import Key
 
 
 # Icon colors for different states
@@ -27,12 +29,63 @@ def _create_icon_image(color):
     return img
 
 
+def _capture_hotkey_dialog():
+    """Show a dialog that waits for a key press and returns the pynput Key or KeyCode."""
+    result = [None]
+
+    root = tk.Tk()
+    root.title("Change Hotkey")
+    root.resizable(False, False)
+    root.attributes("-topmost", True)
+
+    # Center the window
+    root.update_idletasks()
+    w, h = 300, 120
+    x = (root.winfo_screenwidth() - w) // 2
+    y = (root.winfo_screenheight() - h) // 2
+    root.geometry(f"{w}x{h}+{x}+{y}")
+
+    label = tk.Label(root, text="Press the key you want to use as hotkey...", wraplength=280, pady=20)
+    label.pack()
+    status = tk.Label(root, text="", fg="gray")
+    status.pack()
+
+    # pynput key name -> pynput Key mapping
+    _SPECIAL = {k.name: k for k in Key}
+
+    def on_key(event):
+        keysym = event.keysym  # e.g. "F8", "a", "space"
+        # Try to map to a pynput Key (special keys)
+        lower = keysym.lower()
+        if lower in _SPECIAL:
+            result[0] = _SPECIAL[lower]
+        elif len(keysym) == 1:
+            from pynput.keyboard import KeyCode
+            result[0] = KeyCode.from_char(keysym.lower())
+        else:
+            # Try common name variants (F1..F12)
+            if keysym in _SPECIAL:
+                result[0] = _SPECIAL[keysym]
+            else:
+                from pynput.keyboard import KeyCode
+                result[0] = KeyCode.from_char(keysym)
+
+        status.config(text=f"Selected: {keysym}  (releasing closes dialog)")
+        root.after(600, root.destroy)
+
+    root.bind("<KeyPress>", on_key)
+    root.focus_force()
+    root.mainloop()
+    return result[0]
+
+
 class TrayIcon:
     """System tray icon with enable/disable toggle and exit."""
 
-    def __init__(self, on_exit, on_toggle):
+    def __init__(self, on_exit, on_toggle, on_hotkey_change=None):
         self._on_exit = on_exit
         self._on_toggle = on_toggle
+        self._on_hotkey_change = on_hotkey_change
         self._enabled = True
         self._icon = pystray.Icon(
             name="voice-text",
@@ -44,6 +97,7 @@ class TrayIcon:
                     action=self._toggle,
                     default=True,  # double-click action
                 ),
+                pystray.MenuItem("Change Hotkey", self._change_hotkey),
                 pystray.MenuItem("Exit", self._exit),
             ),
         )
@@ -57,6 +111,11 @@ class TrayIcon:
         else:
             icon.icon = _create_icon_image(COLOR_DISABLED)
             icon.title = "Voice-to-Text (Paused)"
+
+    def _change_hotkey(self, icon, item):
+        new_key = _capture_hotkey_dialog()
+        if new_key is not None and self._on_hotkey_change:
+            self._on_hotkey_change(new_key)
 
     def _exit(self, icon, item):
         icon.stop()

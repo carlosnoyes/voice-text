@@ -31,7 +31,12 @@ def main():
         state = "enabled" if enabled else "disabled"
         print(f"  Voice-to-text {state}")
 
-    tray = TrayIcon(on_exit=on_exit, on_toggle=on_toggle)
+    def on_hotkey_change(new_key):
+        if listener:
+            listener.set_hotkey(new_key)
+        print(f"  Hotkey changed to: {new_key}")
+
+    tray = TrayIcon(on_exit=on_exit, on_toggle=on_toggle, on_hotkey_change=on_hotkey_change)
     listener = HotkeyListener(tray=tray)
 
     hotkey_thread = threading.Thread(target=listener.run, daemon=True)

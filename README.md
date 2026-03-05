@@ -41,7 +41,7 @@ python main.py
 
 A green microphone icon appears in your system tray (bottom-right, near the clock).
 
-- **Hold F7** to record, release to transcribe and type
+- **Hold F8** to record, release to transcribe and type
 - **Double-click** the tray icon to enable/disable
 - **Right-click** → Exit to quit
 - Icon turns **red** while recording, **grey** when disabled
