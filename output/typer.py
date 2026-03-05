@@ -1,15 +1,13 @@
 import time
+import pyperclip
 import pynput.keyboard
 
 _controller = pynput.keyboard.Controller()
 
 
 def type_text(text: str):
-    """Type text into the focused application using keyboard simulation."""
-    for char in text:
-        if char == "\n":
-            _controller.press(pynput.keyboard.Key.enter)
-            _controller.release(pynput.keyboard.Key.enter)
-        else:
-            _controller.type(char)
-        time.sleep(0.005)
+    """Copy text to clipboard and paste it with Ctrl+V."""
+    pyperclip.copy(text)
+    time.sleep(0.05)  # brief pause so the clipboard is ready
+    with _controller.pressed(pynput.keyboard.Key.ctrl):
+        _controller.tap(pynput.keyboard.KeyCode.from_char('v'))

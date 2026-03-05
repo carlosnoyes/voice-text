@@ -67,6 +67,8 @@ class HotkeyListener:
         ).start()
 
     def _transcribe_and_type(self, audio_data):
+        if self._tray:
+            self._tray.set_processing(True)
         try:
             raw_text = self.backend.transcribe(audio_data)
             print(f"  Raw: {raw_text}")
@@ -77,7 +79,7 @@ class HotkeyListener:
             print(f"  Error: {e}")
         finally:
             if self._tray:
-                self._tray.set_recording(False)
+                self._tray.set_processing(False)
 
     def run(self):
         with keyboard.Listener(

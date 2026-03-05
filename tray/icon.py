@@ -8,6 +8,7 @@ from pynput.keyboard import Key
 # Icon colors for different states
 COLOR_IDLE = "#4CAF50"       # Green — ready
 COLOR_RECORDING = "#F44336"  # Red — recording
+COLOR_PROCESSING = "#2196F3" # Blue — transcribing/pasting
 COLOR_DISABLED = "#9E9E9E"   # Grey — paused
 
 
@@ -147,7 +148,18 @@ class TrayIcon:
             self._icon.title = "Voice-to-Text (Recording...)"
         else:
             self._icon.icon = _create_icon_image(COLOR_IDLE)
-            self._icon.title = "Voice-to-Text (Active)"
+            self._icon.title = f"Voice-to-Text (Active) — hotkey: {self._hotkey_name}"
+
+    def set_processing(self, is_processing):
+        """Change icon to blue while transcribing/pasting."""
+        if not self._enabled:
+            return
+        if is_processing:
+            self._icon.icon = _create_icon_image(COLOR_PROCESSING)
+            self._icon.title = "Voice-to-Text (Processing...)"
+        else:
+            self._icon.icon = _create_icon_image(COLOR_IDLE)
+            self._icon.title = f"Voice-to-Text (Active) — hotkey: {self._hotkey_name}"
 
     def run(self):
         """Blocks the calling thread — run in a background thread."""
